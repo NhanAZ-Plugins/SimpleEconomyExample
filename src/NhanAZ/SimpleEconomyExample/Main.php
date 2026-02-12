@@ -258,19 +258,14 @@ class Main extends PluginBase {
 		return true;
 	}
 
-	// ══════════════════════════════════════════════════
-	//  FOR ADVANCED DEVELOPERS
-	//  (These examples use more complex patterns)
-	// ══════════════════════════════════════════════════
-
 	/**
 	 * ┌─────────────────────────────────────────────────────────┐
-	 * │  Advanced Example 1: setMoney()                        │
+	 * │  Example 5: setMoney()                                 │
 	 * │  Directly set a player's balance to a specific value.  │
 	 * └─────────────────────────────────────────────────────────┘
 	 *
 	 * Unlike addMoney/reduceMoney which modify the current balance,
-	 * setMoney() replaces it entirely.
+	 * setMoney() replaces it entirely. Use with caution!
 	 *
 	 * API used:
 	 *   $this->economy->setMoney(string $name, int $amount): bool
@@ -284,9 +279,14 @@ class Main extends PluginBase {
 		}
 	}
 
+	// ══════════════════════════════════════════════════
+	//  FOR ADVANCED DEVELOPERS
+	//  (These examples use more complex patterns)
+	// ══════════════════════════════════════════════════
+
 	/**
 	 * ┌─────────────────────────────────────────────────────────┐
-	 * │  Advanced Example 2: getMoneyAsync()                   │
+	 * │  Advanced Example 1: getMoneyAsync()                    │
 	 * │  Check balance of OFFLINE players.                     │
 	 * └─────────────────────────────────────────────────────────┘
 	 *
@@ -313,7 +313,7 @@ class Main extends PluginBase {
 
 	/**
 	 * ┌─────────────────────────────────────────────────────────┐
-	 * │  Advanced Example 3: getPlayerRank()                   │
+	 * │  Advanced Example 2: getPlayerRank()                   │
 	 * │  Check a player's position on the leaderboard.         │
 	 * └─────────────────────────────────────────────────────────┘
 	 *
@@ -335,7 +335,7 @@ class Main extends PluginBase {
 
 	/**
 	 * ┌─────────────────────────────────────────────────────────┐
-	 * │  Advanced Example 4: Combining multiple API calls      │
+	 * │  Advanced Example 3: Combining multiple API calls      │
 	 * │  Check balance → do something → modify balance         │
 	 * └─────────────────────────────────────────────────────────┘
 	 *

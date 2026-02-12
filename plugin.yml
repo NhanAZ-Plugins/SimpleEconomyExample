@@ -6,6 +6,22 @@ author: NhanAZ
 description: "Example plugin demonstrating how to use the SimpleEconomy API."
 depend: SimpleEconomy
 
+commands:
+  wallet:
+    description: "View your own balance."
+    permission: simpleeconomyexample.command.wallet
+  reward:
+    description: "Give a reward to a player."
+    permission: simpleeconomyexample.command.reward
+    usage: "/reward <player> <amount>"
+  fine:
+    description: "Take money from a player as a fine."
+    permission: simpleeconomyexample.command.fine
+    usage: "/fine <player> <amount>"
+  richest:
+    description: "View the top 5 richest players."
+    permission: simpleeconomyexample.command.richest
+
 permissions:
   simpleeconomyexample.command.wallet:
     description: "View your own balance."

@@ -25,6 +25,7 @@ An example plugin demonstrating how to use the **SimpleEconomy API** in your own
 | API Method | What It Does | Used In |
 |---|---|---|
 | `getMoney($name)` | Get a player's balance | `/wallet` command |
+| `setMoney($name, $amount)` | Set balance to an exact value | Example in code |
 | `addMoney($name, $amount)` | Add money to a player | `/reward` command |
 | `reduceMoney($name, $amount)` | Remove money from a player | `/fine` command |
 | `getTopBalances($limit, $offset)` | Get the richest players | `/richest` command |
@@ -41,9 +42,9 @@ An example plugin demonstrating how to use the **SimpleEconomy API** in your own
 
 | API Method | What It Does |
 |---|---|
-| `setMoney($name, $amount)` | Set balance to an exact value |
-| `getMoneyAsync($name, $callback)` | Get balance of offline players |
+| `getMoneyAsync($name, $callback)` | Get balance of offline players (async callback) |
 | `getPlayerRank($name)` | Get leaderboard position |
+| Combined API calls | Check balance → modify → react (e.g. gambling) |
 
 ## Quick Start: Using SimpleEconomy in Your Plugin
 
@@ -98,9 +99,10 @@ public function onTransaction(TransactionSuccessEvent $event): void {
 ## File Structure
 
 ```
-example/
-├── plugin.yml                                    # Plugin metadata
+SimpleEconomyExample/
+├── plugin.yml                                    # Plugin metadata + commands
 ├── .poggit.yml                                   # Poggit CI config
+├── LICENSE                                       # MIT License
 ├── README.md                                     # This file
 └── src/NhanAZ/SimpleEconomyExample/
     ├── Main.php                                  # Main plugin + command examples
