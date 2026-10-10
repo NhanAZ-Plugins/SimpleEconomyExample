@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: NhanAZ-Plugins/SimpleEconomy
-          ref: c45221344f7f2fdf83d8d9f11710f3b8b465d8d0
+          ref: 61a44861f40cb01fa28bb34f8b57c90b293d9580
           path: .ci/SimpleEconomy
           persist-credentials: false
 
