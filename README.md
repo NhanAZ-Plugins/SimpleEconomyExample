@@ -48,7 +48,7 @@ The [build workflow](.github/workflows/build.yml) runs PHPStan at maximum level 
 | `getMoneyAsync($name, $callback)` | Get balance of offline players (async callback) |
 | `getPlayerRank($name)` | Get leaderboard position |
 
-These methods support offline lookups and cached leaderboard reads. `getMoneyAsync()` can raise `InvalidBalanceException` if stored data is malformed. Do not chain debit and credit API calls as a payment or wager: their `bool` results do not confirm persistence. SimpleEconomy's `/pay` command implements the verified paired database write.
+These methods support offline lookups and cached leaderboard reads. `getMoneyAsync()` can raise `InvalidBalanceException` if stored data is malformed. Do not chain debit and credit API calls as a payment or wager because their `bool` results do not confirm persistence. SimpleEconomy's `/pay` command implements the verified paired database write.
 
 ```php
 $economy->getMoneyAsync("Steve", function (?int $balance): void {
