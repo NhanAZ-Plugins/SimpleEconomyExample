@@ -1,13 +1,16 @@
 # SimpleEconomyExample
 
-An example plugin demonstrating how to use the **SimpleEconomy API** in your own PocketMine-MP plugins.
+An example plugin demonstrating how to use the **SimpleEconomy API** in your own Axolotl-PM plugins.
 
-> **This plugin is NOT meant for production use.** It is a learning resource for developers who want to integrate SimpleEconomy into their plugins.
+> [!WARNING]
+> This example is a learning resource and has not passed the checks required for a production release. Its SimpleEconomy dependency is still being updated.
 
 ## Requirements
 
-- [PocketMine-MP](https://github.com/pmmp/PocketMine-MP) API 5.0.0+
-- [SimpleEconomy](https://poggit.pmmp.io/p/SimpleEconomy) installed and enabled
+- [Axolotl-PM](https://github.com/axolotl-pm/PocketMine-MP) with plugin API 5.0.0 as declared by [plugin.yml](plugin.yml). Runtime compatibility has not yet been verified.
+- [SimpleEconomy](https://github.com/NhanAZ-Plugins/SimpleEconomy) installed and enabled. The consumer must be retested after the producer's dependency and transaction gates pass.
+
+The current source has 13 PHPStan level max findings against the checked out SimpleEconomy source and pinned server symbols. No hosted CI, DevTools PHAR or runtime result establishes compatibility for a release. The economy methods returning `bool` report immediate in-memory acceptance and do not confirm that an asynchronous database save completed.
 
 ## Commands
 
@@ -36,7 +39,7 @@ An example plugin demonstrating how to use the **SimpleEconomy API** in your own
 | Event | When It Fires | Can Cancel? |
 |---|---|---|
 | `TransactionSubmitEvent` | **Before** a transaction happens | Yes |
-| `TransactionSuccessEvent` | **After** a transaction completes | No (read-only) |
+| `TransactionSuccessEvent` | After an in-memory balance change, before persistence is confirmed | No (read-only) |
 
 ### Advanced API (for experienced developers)
 
