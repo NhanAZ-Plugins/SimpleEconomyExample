@@ -51,7 +51,6 @@ class EventListener implements Listener {
 	 *   $event->type        → Type: "set", "add", "reduce", or "pay" (string)
 	 *   $event->getAmount() → The difference between old and new balance (int)
 	 *
-	 * @handleCancelled false (only fires for successful transactions anyway)
 	 */
 	public function onTransactionSuccess(TransactionSuccessEvent $event): void {
 		// Log every successful transaction to the console

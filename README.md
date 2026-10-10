@@ -7,10 +7,10 @@ An example plugin demonstrating how to use the **SimpleEconomy API** in your own
 
 ## Requirements
 
-- [Axolotl-PM](https://github.com/axolotl-pm/PocketMine-MP) with plugin API 5.0.0 as declared by [plugin.yml](plugin.yml). Runtime compatibility has not yet been verified.
+- [Axolotl-PM](https://github.com/axolotl-pm/PocketMine-MP) with plugin API 5.0.0 as declared by [plugin.yml](plugin.yml). An isolated boot with the pinned server and SimpleEconomy PHAR passed; connected-player behavior remains unverified.
 - [SimpleEconomy](https://github.com/NhanAZ-Plugins/SimpleEconomy) installed and enabled. The consumer must be retested after the producer's dependency and transaction gates pass.
 
-The [build workflow](.github/workflows/build.yml) passes PHPStan at maximum level against pinned SimpleEconomy and Axolotl-PM source, then uses [DevTools](https://github.com/NhanAZ/DevTools) to build and verify the example PHAR. See the [Actions results](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/actions/workflows/build.yml) for the exact revisions tested. Runtime integration and a release remain pending while the producer's transaction gate is open. The economy methods returning `bool` report immediate in-memory acceptance and do not confirm that an asynchronous database save completed.
+The [build workflow](.github/workflows/build.yml) passes PHPStan at maximum level against pinned SimpleEconomy and Axolotl-PM source, then uses [DevTools](https://github.com/NhanAZ/DevTools) to build and verify the example PHAR. See the [Actions results](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/actions/workflows/build.yml) for the exact revisions tested. A local boot of both verified PHARs exercised console commands; connected-player integration and a release remain pending while the producer's transaction gate is open. The economy methods returning `bool` report immediate in-memory acceptance and do not confirm that an asynchronous database save completed.
 
 ## Commands
 
