@@ -10,7 +10,7 @@ An example plugin demonstrating how to use the **SimpleEconomy API** in your own
 - [Axolotl-PM](https://github.com/axolotl-pm/PocketMine-MP) with plugin API 5.0.0 as declared by [plugin.yml](plugin.yml). Runtime compatibility has not yet been verified.
 - [SimpleEconomy](https://github.com/NhanAZ-Plugins/SimpleEconomy) installed and enabled. The consumer must be retested after the producer's dependency and transaction gates pass.
 
-The current source has 13 PHPStan level max findings against the checked out SimpleEconomy source and pinned server symbols. No hosted CI, DevTools PHAR or runtime result establishes compatibility for a release. The economy methods returning `bool` report immediate in-memory acceptance and do not confirm that an asynchronous database save completed.
+The current source passes PHPStan at maximum level locally against the checked out SimpleEconomy source and pinned server symbols. Hosted CI, DevTools PHAR and runtime integration remain unverified for this consumer. The economy methods returning `bool` report immediate in-memory acceptance and do not confirm that an asynchronous database save completed.
 
 ## Commands
 
@@ -28,7 +28,7 @@ The current source has 13 PHPStan level max findings against the checked out Sim
 | API Method | What It Does | Used In |
 |---|---|---|
 | `getMoney($name)` | Get a player's balance | `/wallet` command |
-| `setMoney($name, $amount)` | Set balance to an exact value | Example in code |
+| `setMoney($name, $amount)` | Set balance to an exact value | Quick start below |
 | `addMoney($name, $amount)` | Add money to a player | `/reward` command |
 | `reduceMoney($name, $amount)` | Remove money from a player | `/fine` command |
 | `getTopBalances($limit, $offset)` | Get the richest players | `/richest` command |
@@ -47,7 +47,16 @@ The current source has 13 PHPStan level max findings against the checked out Sim
 |---|---|
 | `getMoneyAsync($name, $callback)` | Get balance of offline players (async callback) |
 | `getPlayerRank($name)` | Get leaderboard position |
-| Combined API calls | Check balance → modify → react (e.g. gambling) |
+
+These methods support offline lookups and cached leaderboard reads. `getMoneyAsync()` can raise `InvalidBalanceException` if stored data is malformed. Do not chain debit and credit calls as a payment or wager until SimpleEconomy has a verified atomic transfer contract.
+
+```php
+$economy->getMoneyAsync("Steve", function (?int $balance): void {
+    $this->getLogger()->info($balance === null ? "No balance record" : "Steve has $balance");
+});
+
+$rank = $economy->getPlayerRank("Steve"); // Null when absent from the leaderboard cache.
+```
 
 ## Quick Start: Using SimpleEconomy in Your Plugin
 
@@ -78,12 +87,17 @@ $balance = $economy->getMoney("Steve");    // Returns ?int (null if offline)
 // Add money
 $success = $economy->addMoney("Steve", 500);    // Returns bool
 
+// Set an exact balance
+$success = $economy->setMoney("Steve", 5000); // Returns bool
+
 // Remove money
 $success = $economy->reduceMoney("Steve", 200); // Returns bool (false if not enough)
 
 // Format for display
 $text = $economy->formatMoney(1500000);          // Returns "$1,500,000"
 ```
+
+Balance reads can raise `InvalidBalanceException` when a stored value is malformed. Handle that error without writing a replacement balance. The running plugin's four commands are implemented in [Main.php](src/NhanAZ/SimpleEconomyExample/Main.php), while [EventListener.php](src/NhanAZ/SimpleEconomyExample/EventListener.php) contains the active event examples.
 
 ### Step 4 (Optional): Listen to events
 

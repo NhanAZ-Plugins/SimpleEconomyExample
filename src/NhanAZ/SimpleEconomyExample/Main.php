@@ -53,7 +53,6 @@ class Main extends PluginBase {
 		// ──────────────────────────────────────────────
 		//  Step 2: Register commands
 		// ──────────────────────────────────────────────
-		$map = $this->getServer()->getCommandMap();
 		// (We use simple inline commands in onCommand() below)
 
 		// ──────────────────────────────────────────────
@@ -69,6 +68,7 @@ class Main extends PluginBase {
 
 	/**
 	 * Handle all commands in one place for simplicity.
+	 * @param list<string> $args
 	 */
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
 		switch ($command->getName()) {
@@ -139,6 +139,7 @@ class Main extends PluginBase {
 	 * Returns true if successful, false if:
 	 *   - Player is offline
 	 *   - Another plugin cancelled the transaction (via TransactionSubmitEvent)
+	 * @param list<string> $args
 	 */
 	private function handleReward(CommandSender $sender, array $args): bool {
 		// Check usage: /reward <player> <amount>
@@ -148,10 +149,10 @@ class Main extends PluginBase {
 		}
 
 		$playerName = $args[0];
-		$amount = (int) $args[1];
+		$amount = filter_var($args[1], FILTER_VALIDATE_INT, ["options" => ["min_range" => 1]]);
 
 		// Validate the amount
-		if ($amount <= 0) {
+		if ($amount === false) {
 			$sender->sendMessage(TextFormat::RED . "Amount must be greater than 0.");
 			return true;
 		}
@@ -185,6 +186,7 @@ class Main extends PluginBase {
 	 *   - Player is offline
 	 *   - Player doesn't have enough money
 	 *   - Another plugin cancelled the transaction
+	 * @param list<string> $args
 	 */
 	private function handleFine(CommandSender $sender, array $args): bool {
 		// Check usage: /fine <player> <amount>
@@ -194,9 +196,9 @@ class Main extends PluginBase {
 		}
 
 		$playerName = $args[0];
-		$amount = (int) $args[1];
+		$amount = filter_var($args[1], FILTER_VALIDATE_INT, ["options" => ["min_range" => 1]]);
 
-		if ($amount <= 0) {
+		if ($amount === false) {
 			$sender->sendMessage(TextFormat::RED . "Amount must be greater than 0.");
 			return true;
 		}
@@ -256,120 +258,5 @@ class Main extends PluginBase {
 		}
 
 		return true;
-	}
-
-	/**
-	 * ┌─────────────────────────────────────────────────────────┐
-	 * │  Example 5: setMoney()                                 │
-	 * │  Directly set a player's balance to a specific value.  │
-	 * └─────────────────────────────────────────────────────────┘
-	 *
-	 * Unlike addMoney/reduceMoney which modify the current balance,
-	 * setMoney() replaces it entirely. Use with caution!
-	 *
-	 * API used:
-	 *   $this->economy->setMoney(string $name, int $amount): bool
-	 */
-	private function exampleSetMoney(): void {
-		// Set Steve's balance to exactly 5000
-		$success = $this->economy->setMoney("Steve", 5000);
-
-		if ($success) {
-			// Balance is now 5000, regardless of what it was before
-		}
-	}
-
-	// ══════════════════════════════════════════════════
-	//  FOR ADVANCED DEVELOPERS
-	//  (These examples use more complex patterns)
-	// ══════════════════════════════════════════════════
-
-	/**
-	 * ┌─────────────────────────────────────────────────────────┐
-	 * │  Advanced Example 1: getMoneyAsync()                    │
-	 * │  Check balance of OFFLINE players.                     │
-	 * └─────────────────────────────────────────────────────────┘
-	 *
-	 * getMoney() only works for ONLINE players.
-	 * getMoneyAsync() works for BOTH online AND offline players.
-	 *
-	 * The result comes through a callback because loading offline
-	 * data takes time (it needs to read from the database).
-	 *
-	 * API used:
-	 *   $this->economy->getMoneyAsync(string $name, Closure $callback): void
-	 */
-	private function exampleGetMoneyAsync(): void {
-		$this->economy->getMoneyAsync("Steve", function (?int $balance): void {
-			if ($balance !== null) {
-				// Player exists, balance is available
-				$this->getLogger()->info("Steve's balance: " . $balance);
-			} else {
-				// Player has never joined the server
-				$this->getLogger()->info("Steve has never played on this server.");
-			}
-		});
-	}
-
-	/**
-	 * ┌─────────────────────────────────────────────────────────┐
-	 * │  Advanced Example 2: getPlayerRank()                   │
-	 * │  Check a player's position on the leaderboard.         │
-	 * └─────────────────────────────────────────────────────────┘
-	 *
-	 * API used:
-	 *   $this->economy->getPlayerRank(string $name): ?int
-	 *
-	 * Returns the rank (1 = richest), or null if the player is not
-	 * in the leaderboard cache.
-	 */
-	private function exampleGetPlayerRank(): void {
-		$rank = $this->economy->getPlayerRank("Steve");
-
-		if ($rank !== null) {
-			$this->getLogger()->info("Steve is ranked #" . $rank . " on the leaderboard.");
-		} else {
-			$this->getLogger()->info("Steve is not on the leaderboard.");
-		}
-	}
-
-	/**
-	 * ┌─────────────────────────────────────────────────────────┐
-	 * │  Advanced Example 3: Combining multiple API calls      │
-	 * │  Check balance → do something → modify balance         │
-	 * └─────────────────────────────────────────────────────────┘
-	 *
-	 * A practical example: "Double or Nothing" gamble.
-	 * Player pays 100 to play, 50% chance to win 200 back.
-	 */
-	private function exampleCombinedUsage(Player $player): void {
-		$name = $player->getName();
-		$cost = 100;
-
-		// Step 1: Check if the player has enough money
-		$balance = $this->economy->getMoney($name);
-		if ($balance === null || $balance < $cost) {
-			$player->sendMessage("You need at least " . $this->economy->formatMoney($cost) . " to play!");
-			return;
-		}
-
-		// Step 2: Take the entry fee
-		$paid = $this->economy->reduceMoney($name, $cost);
-		if (!$paid) {
-			$player->sendMessage("Payment failed. Try again.");
-			return;
-		}
-
-		// Step 3: 50/50 chance
-		$won = (mt_rand(0, 1) === 1);
-
-		if ($won) {
-			// Step 4a: Player wins, give them double
-			$this->economy->addMoney($name, $cost * 2);
-			$player->sendMessage(TextFormat::GREEN . "You won " . $this->economy->formatMoney($cost * 2) . "!");
-		} else {
-			// Step 4b: Player loses, money is already taken
-			$player->sendMessage(TextFormat::RED . "You lost " . $this->economy->formatMoney($cost) . "!");
-		}
 	}
 }

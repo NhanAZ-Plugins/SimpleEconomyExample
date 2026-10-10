@@ -1,0 +1,104 @@
+name: Build and validate SimpleEconomyExample
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Analyze and build example PHAR
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out example source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check out pinned SimpleEconomy source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: NhanAZ-Plugins/SimpleEconomy
+          ref: c45221344f7f2fdf83d8d9f11710f3b8b465d8d0
+          path: .ci/SimpleEconomy
+          persist-credentials: false
+
+      - name: Check out pinned SimpleSQL source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: NhanAZ-Libraries/SimpleSQL
+          ref: 1dba602e54ec6975da9fae1a68824ea061f2f489 # v1.0.1
+          path: .ci/SimpleSQL
+          persist-credentials: false
+
+      - name: Check out pinned libasynql source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: poggit/libasynql
+          ref: 270f8ae93e3271206eadd42ca81862ab9a54f322
+          path: .ci/libasynql
+          persist-credentials: false
+
+      - name: Check out pinned ScoreHud API source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Ifera/ScoreHud
+          ref: 3f5b13b3daef0de3d2f5f81ad899dbbcc9eaf52f
+          path: .ci/ScoreHud
+          persist-credentials: false
+
+      - name: Check out pinned Axolotl-PM source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: axolotl-pm/PocketMine-MP
+          ref: dfe0d07e48a9e8d5a4a242fa43ff1cd3b743a955 # 5.49.1
+          path: .ci/axolotl
+          persist-credentials: false
+
+      - name: Set up Axolotl-PM PHP environment
+        uses: axolotl-pm/setup-php-action@b8c3f9add4f2ad4a5e2624a1112aba899ee8db0e
+        with:
+          php-version: "8.1"
+          pm-version-major: "5"
+          install-path: ./.php-bin
+
+      - name: Lint example PHP source
+        run: find src -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Analyze and build with DevTools
+        id: build
+        uses: NhanAZ/DevTools@6606444fc32787a3e50275fdb668c2310e899740 # v1.0.3
+        with:
+          project: .
+          output: build
+          phpstan: max
+          phpstan-server: .ci/axolotl
+          phpstan-paths: |
+            .ci/SimpleEconomy/src
+            .ci/SimpleSQL/src
+            .ci/libasynql/libasynql/src
+            .ci/ScoreHud/src
+
+      - name: Verify example PHAR and source contents
+        shell: bash
+        env:
+          PHAR_PATH: ${{ steps.build.outputs.phar }}
+          BUILD_METADATA: ${{ steps.build.outputs.metadata }}
+        run: |
+          set -euo pipefail
+          php .github/scripts/verify-phar.php "$PHAR_PATH" "$BUILD_METADATA"
+          cp "$BUILD_METADATA" build/build-metadata.json
+
+      - name: Upload verified example PHAR
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.build.outputs.plugin-name }}-${{ github.sha }}
+          path: |
+            ${{ steps.build.outputs.phar }}
+            build/build-metadata.json
+          if-no-files-found: error
+          retention-days: 14
