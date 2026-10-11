@@ -3,7 +3,7 @@
 An example plugin demonstrating how to use the **SimpleEconomy API** in your own Axolotl-PM plugins.
 
 > [!WARNING]
-> This example is a learning resource and has not passed the checks required for a production release. The tested SimpleEconomy dependency is a prerelease.
+> This example is a learning resource. The [evaluation prerelease](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/releases/tag/v1.0.1-beta.1) depends on a SimpleEconomy prerelease; production deployment remains unverified.
 
 ## Requirements
 
