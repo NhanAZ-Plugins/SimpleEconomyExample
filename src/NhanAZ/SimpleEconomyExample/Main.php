@@ -136,7 +136,7 @@ class Main extends PluginBase {
 	 * API used:
 	 *   $this->economy->addMoney(string $name, int $amount): bool
 	 *
-	 * Returns true if successful, false if:
+	 * Returns true when the in-memory change is accepted, false if:
 	 *   - Player is offline
 	 *   - Another plugin cancelled the transaction (via TransactionSubmitEvent)
 	 * @param list<string> $args
@@ -162,7 +162,7 @@ class Main extends PluginBase {
 
 		if ($success) {
 			$formatted = $this->economy->formatMoney($amount);
-			$sender->sendMessage(TextFormat::GREEN . "Gave " . $formatted . " to " . $playerName . "!");
+			$sender->sendMessage(TextFormat::GREEN . "Reward of " . $formatted . " for " . $playerName . " accepted. Database save not confirmed by this command.");
 		} else {
 			// This happens when:
 			// - The player is not online
@@ -182,7 +182,7 @@ class Main extends PluginBase {
 	 * API used:
 	 *   $this->economy->reduceMoney(string $name, int $amount): bool
 	 *
-	 * Returns true if successful, false if:
+	 * Returns true when the in-memory change is accepted, false if:
 	 *   - Player is offline
 	 *   - Player doesn't have enough money
 	 *   - Another plugin cancelled the transaction
@@ -209,7 +209,7 @@ class Main extends PluginBase {
 
 		if ($success) {
 			$formatted = $this->economy->formatMoney($amount);
-			$sender->sendMessage(TextFormat::GREEN . "Fined " . $playerName . " " . $formatted . "!");
+			$sender->sendMessage(TextFormat::GREEN . "Fine of " . $formatted . " for " . $playerName . " accepted. Database save not confirmed by this command.");
 		} else {
 			$sender->sendMessage(TextFormat::RED . "Failed! Player may be offline or doesn't have enough money.");
 		}
