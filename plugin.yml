@@ -1,6 +1,6 @@
 name: SimpleEconomyExample
 main: NhanAZ\SimpleEconomyExample\Main
-version: 1.0.0
+version: 1.0.1-beta.1
 api: 5.0.0
 author: NhanAZ
 description: "Example plugin demonstrating how to use the SimpleEconomy API."

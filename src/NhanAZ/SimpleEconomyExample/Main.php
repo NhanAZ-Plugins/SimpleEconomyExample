@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace NhanAZ\SimpleEconomyExample;
 
+use Closure;
 use NhanAZ\SimpleEconomy\Main as SimpleEconomy;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
@@ -129,16 +130,17 @@ class Main extends PluginBase {
 
 	/**
 	 * ┌─────────────────────────────────────────────┐
-	 * │  Example 2: addMoney()                      │
+	 * │  Example 2: addMoneyConfirmed()             │
 	 * │  Give money to a player.                    │
 	 * └─────────────────────────────────────────────┘
 	 *
 	 * API used:
-	 *   $this->economy->addMoney(string $name, int $amount): bool
+	 *   $this->economy->addMoneyConfirmed(string $name, int $amount, Closure $onComplete): void
 	 *
-	 * Returns true when the in-memory change is accepted, false if:
+	 * The callback receives true after SQL save and readback, or false if:
 	 *   - Player is offline
 	 *   - Another plugin cancelled the transaction (via TransactionSubmitEvent)
+	 *   - The database rejected the save
 	 * @param list<string> $args
 	 */
 	private function handleReward(CommandSender $sender, array $args): bool {
@@ -157,35 +159,32 @@ class Main extends PluginBase {
 			return true;
 		}
 
-		// addMoney() adds money to the player's balance
-		$success = $this->economy->addMoney($playerName, $amount);
-
-		if ($success) {
-			$formatted = $this->economy->formatMoney($amount);
-			$sender->sendMessage(TextFormat::GREEN . "Reward of " . $formatted . " for " . $playerName . " accepted. Database save not confirmed by this command.");
-		} else {
-			// This happens when:
-			// - The player is not online
-			// - Another plugin cancelled the transaction
-			$sender->sendMessage(TextFormat::RED . "Failed! Is the player online?");
-		}
+		$this->economy->addMoneyConfirmed($playerName, $amount, function (bool $saved) use ($sender, $amount, $playerName): void {
+			if ($saved) {
+				$formatted = $this->economy->formatMoney($amount);
+				$sender->sendMessage(TextFormat::GREEN . "Reward of " . $formatted . " for " . $playerName . " saved to SQL.");
+			} else {
+				$sender->sendMessage(TextFormat::RED . "Reward failed. The player may be offline, the transaction was cancelled, or the SQL save failed.");
+			}
+		});
 
 		return true;
 	}
 
 	/**
 	 * ┌─────────────────────────────────────────────┐
-	 * │  Example 3: reduceMoney()                   │
+	 * │  Example 3: reduceMoneyConfirmed()          │
 	 * │  Take money from a player.                  │
 	 * └─────────────────────────────────────────────┘
 	 *
 	 * API used:
-	 *   $this->economy->reduceMoney(string $name, int $amount): bool
+	 *   $this->economy->reduceMoneyConfirmed(string $name, int $amount, Closure $onComplete): void
 	 *
-	 * Returns true when the in-memory change is accepted, false if:
+	 * The callback receives true after SQL save and readback, or false if:
 	 *   - Player is offline
 	 *   - Player doesn't have enough money
 	 *   - Another plugin cancelled the transaction
+	 *   - The database rejected the save
 	 * @param list<string> $args
 	 */
 	private function handleFine(CommandSender $sender, array $args): bool {
@@ -203,16 +202,14 @@ class Main extends PluginBase {
 			return true;
 		}
 
-		// reduceMoney() removes money from the player's balance
-		// It will NOT go below 0 - returns false if insufficient funds
-		$success = $this->economy->reduceMoney($playerName, $amount);
-
-		if ($success) {
-			$formatted = $this->economy->formatMoney($amount);
-			$sender->sendMessage(TextFormat::GREEN . "Fine of " . $formatted . " for " . $playerName . " accepted. Database save not confirmed by this command.");
-		} else {
-			$sender->sendMessage(TextFormat::RED . "Failed! Player may be offline or doesn't have enough money.");
-		}
+		$this->economy->reduceMoneyConfirmed($playerName, $amount, function (bool $saved) use ($sender, $amount, $playerName): void {
+			if ($saved) {
+				$formatted = $this->economy->formatMoney($amount);
+				$sender->sendMessage(TextFormat::GREEN . "Fine of " . $formatted . " for " . $playerName . " saved to SQL.");
+			} else {
+				$sender->sendMessage(TextFormat::RED . "Fine failed. The player may be offline, lack funds, the transaction was cancelled, or the SQL save failed.");
+			}
+		});
 
 		return true;
 	}

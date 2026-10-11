@@ -8,9 +8,9 @@ An example plugin demonstrating how to use the **SimpleEconomy API** in your own
 ## Requirements
 
 - [Axolotl-PM](https://github.com/axolotl-pm/PocketMine-MP) with plugin API 5.0.0 as declared by [plugin.yml](plugin.yml). An isolated server test with a headless Bedrock protocol client exercised all four commands. The real game UI remains unverified.
-- [SimpleEconomy](https://github.com/NhanAZ-Plugins/SimpleEconomy) installed and enabled. The build workflow pins the prerelease source and its SimpleSQL dependency for static analysis.
+- [SimpleEconomy prerelease `v1.1.0-beta.2`](https://github.com/NhanAZ-Plugins/SimpleEconomy/releases/tag/v1.1.0-beta.2) installed and enabled. This is the verified revision that supplies the confirmed balance API. The build workflow pins its source and SimpleSQL dependency for static analysis.
 
-The [build workflow](.github/workflows/build.yml) runs PHPStan at maximum level against pinned SimpleEconomy and Axolotl-PM source, then uses [DevTools](https://github.com/NhanAZ/DevTools) to build and verify the example PHAR. See the [Actions results](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/actions/workflows/build.yml) for the exact revisions tested. Local tests exercised console commands and all four commands through a connected headless client. The final SQLite balance matched the expected result after shutdown. A second client session checked an offline reward, an unaffordable fine and a zero amount. Each command returned its expected error, and the saved balance and revision did not change. A release remains pending. The economy methods returning `bool` report immediate in-memory acceptance and do not confirm that an asynchronous database save completed. SimpleEconomy's `/pay` command uses a separately verified paired database write. This example does not call that command.
+The [build workflow](.github/workflows/build.yml) runs PHPStan at maximum level against pinned SimpleEconomy and Axolotl-PM source, then uses [DevTools](https://github.com/NhanAZ/DevTools) to build and verify the example PHAR. See the [Actions results](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/actions/workflows/build.yml) for the exact revisions tested. Earlier local tests exercised console commands and all four commands through a connected headless client using the previous immediate-acceptance API. The final SQLite balance matched the expected result after shutdown. A second client session checked an offline reward, an unaffordable fine and a zero amount; the saved balance and revision did not change. The current `/reward` and `/fine` examples use the confirmed callback API and report success only after SQL save and readback. The YAML mirror is queued separately. A release remains pending. SimpleEconomy's `/pay` command uses a separately verified paired database write. This example does not call that command.
 
 ## Commands
 
@@ -29,8 +29,8 @@ The [build workflow](.github/workflows/build.yml) runs PHPStan at maximum level 
 |---|---|---|
 | `getMoney($name)` | Get a player's balance | `/wallet` command |
 | `setMoney($name, $amount)` | Set balance to an exact value | Quick start below |
-| `addMoney($name, $amount)` | Add money to a player | `/reward` command |
-| `reduceMoney($name, $amount)` | Remove money from a player | `/fine` command |
+| `addMoneyConfirmed($name, $amount, $callback)` | Add money and report confirmed SQL save | `/reward` command |
+| `reduceMoneyConfirmed($name, $amount, $callback)` | Remove money and report confirmed SQL save | `/fine` command |
 | `getTopBalances($limit, $offset)` | Get the richest players | `/richest` command |
 | `formatMoney($amount)` | Format number with currency symbol | All commands |
 
@@ -39,7 +39,7 @@ The [build workflow](.github/workflows/build.yml) runs PHPStan at maximum level 
 | Event | When It Fires | Can Cancel? |
 |---|---|---|
 | `TransactionSubmitEvent` | **Before** a transaction happens | Yes |
-| `TransactionSuccessEvent` | After an in-memory balance change, before persistence is confirmed | No (read-only) |
+| `TransactionSuccessEvent` | After an immediate API balance change, or after confirmed SQL save for a confirmed API call | No (read-only) |
 
 ### Advanced API (for experienced developers)
 
@@ -48,7 +48,7 @@ The [build workflow](.github/workflows/build.yml) runs PHPStan at maximum level 
 | `getMoneyAsync($name, $callback)` | Get balance of offline players (async callback) |
 | `getPlayerRank($name)` | Get leaderboard position |
 
-These methods support offline lookups and cached leaderboard reads. `getMoneyAsync()` can raise `InvalidBalanceException` if stored data is malformed. Do not chain debit and credit API calls as a payment or wager because their `bool` results do not confirm persistence. SimpleEconomy's `/pay` command implements the verified paired database write.
+These methods support offline lookups and cached leaderboard reads. `getMoneyAsync()` can raise `InvalidBalanceException` if stored data is malformed. Do not chain debit and credit API calls as a payment or wager, even with confirmed callbacks: two separately saved balances are not an atomic transfer. SimpleEconomy's `/pay` command implements the verified paired database write.
 
 ```php
 $economy->getMoneyAsync("Steve", function (?int $balance): void {
@@ -84,14 +84,18 @@ if ($economy === null) {
 // Get balance
 $balance = $economy->getMoney("Steve");    // Returns ?int (null if offline)
 
-// Add money
-$success = $economy->addMoney("Steve", 500);    // Returns bool
+// Add money and wait for SQL save confirmation
+$economy->addMoneyConfirmed("Steve", 500, function (bool $saved): void {
+    $this->getLogger()->info($saved ? "Reward saved" : "Reward failed");
+});
 
-// Set an exact balance
-$success = $economy->setMoney("Steve", 5000); // Returns bool
+// Set an exact balance with immediate in-memory acceptance only
+$accepted = $economy->setMoney("Steve", 5000); // Returns bool
 
-// Remove money
-$success = $economy->reduceMoney("Steve", 200); // Returns bool (false if not enough)
+// Remove money and wait for SQL save confirmation
+$economy->reduceMoneyConfirmed("Steve", 200, function (bool $saved): void {
+    $this->getLogger()->info($saved ? "Fine saved" : "Fine failed");
+});
 
 // Format for display
 $text = $economy->formatMoney(1500000);          // Returns "$1,500,000"
