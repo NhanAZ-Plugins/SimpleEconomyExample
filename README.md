@@ -7,10 +7,10 @@ An example plugin demonstrating how to use the **SimpleEconomy API** in your own
 
 ## Requirements
 
-- [Axolotl-PM](https://github.com/axolotl-pm/PocketMine-MP) with plugin API 5.0.0 as declared by [plugin.yml](plugin.yml). An isolated boot with the pinned server and SimpleEconomy PHAR passed; connected-player behavior remains unverified.
+- [Axolotl-PM](https://github.com/axolotl-pm/PocketMine-MP) with plugin API 5.0.0 as declared by [plugin.yml](plugin.yml). An isolated server test with a headless Bedrock protocol client exercised all four commands; a real game UI remains unverified.
 - [SimpleEconomy](https://github.com/NhanAZ-Plugins/SimpleEconomy) installed and enabled. The build workflow pins the prerelease source and its SimpleSQL dependency for static analysis.
 
-The [build workflow](.github/workflows/build.yml) runs PHPStan at maximum level against pinned SimpleEconomy and Axolotl-PM source, then uses [DevTools](https://github.com/NhanAZ/DevTools) to build and verify the example PHAR. See the [Actions results](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/actions/workflows/build.yml) for the exact revisions tested. A local boot of both verified PHARs exercised console commands. Connected-player integration and a release remain pending. The economy methods returning `bool` report immediate in-memory acceptance and do not confirm that an asynchronous database save completed. SimpleEconomy's `/pay` command uses a separately verified paired database write; this example does not call that command.
+The [build workflow](.github/workflows/build.yml) runs PHPStan at maximum level against pinned SimpleEconomy and Axolotl-PM source, then uses [DevTools](https://github.com/NhanAZ/DevTools) to build and verify the example PHAR. See the [Actions results](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/actions/workflows/build.yml) for the exact revisions tested. Local tests exercised console commands and all four commands through a connected headless client; the final SQLite balance matched the expected result after shutdown. A release remains pending. The economy methods returning `bool` report immediate in-memory acceptance and do not confirm that an asynchronous database save completed. SimpleEconomy's `/pay` command uses a separately verified paired database write; this example does not call that command.
 
 ## Commands
 
