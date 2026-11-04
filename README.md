@@ -1,9 +1,15 @@
 # SimpleEconomyExample
 
-An example plugin demonstrating how to use the **SimpleEconomy API** in your own Axolotl-PM plugins.
+Example plugin demonstrating the SimpleEconomy API with wallet, reward, fine, and leaderboard commands.
 
-> [!WARNING]
-> This is an API learning resource, not a turnkey economy system. Stable [v1.0.1](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/releases/tag/v1.0.1) uses the stable SimpleEconomy API. Real Bedrock UI and production deployments remain unverified.
+[![CI](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/actions/workflows/build.yml/badge.svg)](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/actions/workflows/build.yml)
+[![Latest release](https://img.shields.io/github/v/release/NhanAZ-Plugins/SimpleEconomyExample)](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/releases/latest)
+[![License](https://img.shields.io/github/license/NhanAZ-Plugins/SimpleEconomyExample)](https://github.com/NhanAZ-Plugins/SimpleEconomyExample/blob/main/LICENSE)
+[![Discord](https://img.shields.io/discord/986553214889517088?label=Discord&logo=discord&logoColor=white&color=5865F2)](https://discord.gg/j2X83ujT6c)
+
+## Overview
+
+This example targets the PocketMine-MP and Axolotl-PM API 5 ecosystem and is maintained under [NhanAZ-Plugins](https://github.com/NhanAZ-Plugins).
 
 ## Requirements
 
